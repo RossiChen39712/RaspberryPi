@@ -146,6 +146,32 @@ void board_enable_reception(Board *board, int enable)
     board->enable_recv = enable;
 }
 
+// 設置 RGB LED 的函數
+void board_set_rgb(Board *board, int pixels[][4], int count)
+{
+    // 創建數據緩衝區
+    uint8_t data[3 + count * 4]; // 3個字節頭信息 + 每個LED 4個字節(1個ID + 3個RGB)
+    data[0] = 0x01;              // 命令的子命令 (可以根據具體情況更改)
+    data[1] = (uint8_t)count;    // 設置 LED 的數量
+
+    // 將每個LED的信息打包到數據中
+    for (int i = 0; i < count; i++)
+    {
+        int index = pixels[i][0];          // LED的ID
+        uint8_t r = (uint8_t)pixels[i][1]; // 紅色
+        uint8_t g = (uint8_t)pixels[i][2]; // 綠色
+        uint8_t b = (uint8_t)pixels[i][3]; // 藍色
+
+        data[2 + i * 4] = (uint8_t)(index - 1); // LED ID 減 1
+        data[3 + i * 4] = r;
+        data[4 + i * 4] = g;
+        data[5 + i * 4] = b;
+    }
+
+    // 將打包好的數據寫入
+    buf_write(board, PACKET_FUNC_RGB, data, sizeof(data));
+}
+
 // 測試 Bus 舵機
 void bus_servo_test(Board *board)
 {
