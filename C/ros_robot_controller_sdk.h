@@ -84,7 +84,7 @@ void board_set_motor_speed(Board *board, const float *speeds, int count);
 void board_set_oled_text(Board *board, int line, const char *text);
 
 // 設置 RGB 顏色
-void board_set_rgb(Board *board, const uint8_t *pixels, int count);
+void board_set_rgb(Board *board, int pixels[][4], int count);
 
 // 設置電機佔空比
 void board_set_motor_duty(Board *board, const float *dutys, int count);
