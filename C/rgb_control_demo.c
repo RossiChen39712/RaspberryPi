@@ -52,13 +52,13 @@ int main()
         //     board_set_rgb(&board, rgb_yellow, 2);
         //     sleep(1);
 
-        //     if (!start)
-        //     {
-        //         // 關閉所有燈
-        //         board_set_rgb(&board, rgb_off, 2);
-        //         printf("已關閉\n");
-        //         break;
-        //     }
+        if (!start)
+        {
+            // 關閉所有燈
+            board_set_rgb(&board, rgb_off, 2);
+            printf("已關閉\n");
+            break;
+        }
     }
 
     return 0;
