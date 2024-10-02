@@ -72,6 +72,8 @@ typedef struct
 // 初始化 Board
 void board_init(Board *board, const char *device, int baudrate, int timeout);
 
+void board_buf_write(Board *board, PacketFunction func, const uint8_t *data, int len);
+
 // 設置 LED 控制
 void board_set_led(Board *board, float on_time, float off_time, int repeat, int led_id);
 
