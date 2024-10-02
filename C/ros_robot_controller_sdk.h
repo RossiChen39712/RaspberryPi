@@ -63,6 +63,7 @@ typedef struct
     int enable_recv;
     int frame[256];
     int recv_count;
+    int fd;
     // 添加其他必要的狀態和資源
 } Board;
 

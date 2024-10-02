@@ -2,10 +2,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <pthread.h>
-#include <unistd.h>  // for sleep function
-#include <fcntl.h>   // for file control options
-#include <termios.h> // for POSIX terminal control definitions
+// #include <pthread.h>
+#include <unistd.h> // for sleep function
+#include <fcntl.h>  // for file control options
+// #include <termios.h> // for POSIX terminal control definitions
 
 // CRC8 校驗表
 static const uint8_t crc8_table[256] = {
@@ -35,96 +35,6 @@ uint8_t checksum_crc8(const uint8_t *data, int len)
         check = crc8_table[check ^ data[i]];
     }
     return check & 0xFF;
-}
-
-// 初始化 Board
-void board_init(Board *board, const char *device, int baudrate, int timeout)
-{
-    board->enable_recv = 0;
-    board->recv_count = 0;
-
-    // 打開串口
-    board->fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY);
-    if (board->fd == -1)
-    {
-        perror("串口打開失敗");
-        return;
-    }
-
-    struct termios options;
-    tcgetattr(board->fd, &options);
-    cfsetispeed(&options, baudrate);
-    cfsetospeed(&options, baudrate);
-    options.c_cflag |= (CLOCAL | CREAD);
-    options.c_cflag &= ~CSIZE;
-    options.c_cflag |= CS8;
-    options.c_cflag &= ~PARENB;
-    options.c_cflag &= ~CSTOPB;
-    options.c_cflag &= ~CRTSCTS;
-    tcsetattr(board->fd, TCSANOW, &options);
-
-    // 啟動接收執行緒
-    pthread_t recv_thread;
-    pthread_create(&recv_thread, NULL, board_recv_task, (void *)board);
-}
-
-// 設置 LED
-void board_set_led(Board *board, float on_time, float off_time, int repeat, int led_id)
-{
-    uint16_t on_ms = (uint16_t)(on_time * 1000);
-    uint16_t off_ms = (uint16_t)(off_time * 1000);
-    uint8_t data[7] = {led_id, on_ms & 0xFF, on_ms >> 8, off_ms & 0xFF, off_ms >> 8, repeat & 0xFF, repeat >> 8};
-    board_buf_write(board, PACKET_FUNC_LED, data, 7);
-}
-
-// 設置電機佔空比
-void board_set_motor_duty(Board *board, const float *dutys, int count)
-{
-    uint8_t data[10]; // 假設最多支持4個電機
-    data[0] = 0x05;
-    data[1] = count;
-    for (int i = 0; i < count; i++)
-    {
-        data[2 + i * 2] = (uint8_t)(dutys[i] * 100); // 簡單比例轉換
-    }
-    board_buf_write(board, PACKET_FUNC_MOTOR, data, 2 + count * 2);
-}
-
-// 讀取 IMU 數據
-int board_get_imu(Board *board, float *imu_data)
-{
-    if (board->enable_recv)
-    {
-        // 假設有隊列系統來檢查 IMU 數據
-        // 填充 imu_data 數據並返回 1 表示成功
-        return 1;
-    }
-    return 0;
-}
-
-// 接收數據的執行緒
-void *board_recv_task(void *arg)
-{
-    Board *board = (Board *)arg;
-    uint8_t recv_data;
-
-    while (1)
-    {
-        if (board->enable_recv)
-        {
-            int n = read(board->fd, &recv_data, 1);
-            if (n > 0)
-            {
-                // 根據通信協議處理接收數據
-                // 這裡需要添加接收邏輯
-            }
-        }
-        else
-        {
-            usleep(10000); // 每次迴圈延遲 10 毫秒
-        }
-    }
-    return NULL;
 }
 
 // 傳輸數據到串口
