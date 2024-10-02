@@ -38,7 +38,7 @@ uint8_t checksum_crc8(const uint8_t *data, int len)
 }
 
 // 傳輸數據到串口
-void board_buf_write(Board *board, PacketFunction func, const uint8_t *data, int len)
+void buf_write(Board *board, PacketFunction func, const uint8_t *data, int len)
 {
     uint8_t buf[256];
     buf[0] = 0xAA;
