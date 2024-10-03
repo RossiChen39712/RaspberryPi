@@ -25,12 +25,6 @@ int main()
 
     // // 初始化 Board，假設有對應的函數
     // board_init(&board);
-    PacketController *controller = init_controller();
-    if (!controller)
-    {
-        printf("Failed to initialize controller\n");
-        return 1;
-    }
 
     // 先將所有燈關閉
     int rgb_off[2][4] = {{1, 0, 0, 0}, {2, 0, 0, 0}};
@@ -62,7 +56,6 @@ int main()
         {
             // 關閉所有燈
             board_set_rgb(&board, rgb_off, 2);
-            cleanup_controller(controller);
             printf("已關閉\n");
             break;
         }
