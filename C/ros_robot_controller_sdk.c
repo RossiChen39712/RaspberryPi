@@ -47,6 +47,14 @@ void buf_write(Board *board, PacketFunction func, const uint8_t *data, int len)
     buf[3] = len;
     memcpy(&buf[4], data, len);
     buf[4 + len] = checksum_crc8(&buf[2], len + 2);
+    // 打印發送的緩衝區
+    printf("Sending buffer: ");
+    for (int i = 0; i < len + 5; i++)
+    {
+        printf("%02x ", buf[i]);
+    }
+    printf("\n");
+
     write(board->fd, buf, len + 5);
 }
 
@@ -79,11 +87,11 @@ void board_set_rgb(Board *board, int pixels[][4], int count)
         data[5 + i * 4] = b;
     }
 
-    for (int i = 0; i < sizeof(data); i++)
-    {
-        printf("%02x ", data[i]); // 打印每個字節
-    }
-    printf("\n");
+    // for (int i = 0; i < sizeof(data); i++)
+    // {
+    //     printf("%02x ", data[i]); // 打印每個字節
+    // }
+    // printf("\n");
 
     // 將打包好的數據寫入
     buf_write(board, PACKET_FUNC_RGB, data, sizeof(data));

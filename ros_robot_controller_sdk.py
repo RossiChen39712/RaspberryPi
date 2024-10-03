@@ -316,6 +316,7 @@ class Board:
         buf.append(len(data))
         buf.extend(data)
         buf.append(checksum_crc8(bytes(buf[2:])))
+        print("Sending buffer:", [f"{byte:02x}" for byte in buf])  # 打印發送緩衝區
         self.port.write(buf)
 
     def set_led(self, on_time, off_time, repeat=1, led_id=1):
@@ -344,10 +345,10 @@ class Board:
         for index, r, g, b in pixels:
             data.extend(struct.pack("<BBBB", int(index - 1), int(r), int(g), int(b)))
 
-        print("Generated data:")
-        for byte in data:
-            print(f"{byte:02x} ", end="")
-        print()    
+        # print("Generated data:")
+        # for byte in data:
+        #     print(f"{byte:02x} ", end="")
+        # print()    
 
         self.buf_write(PacketFunction.PACKET_FUNC_RGB, data)
 
