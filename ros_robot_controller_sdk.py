@@ -343,6 +343,12 @@ class Board:
         data = [0x01, len(pixels), ]
         for index, r, g, b in pixels:
             data.extend(struct.pack("<BBBB", int(index - 1), int(r), int(g), int(b)))
+
+        print("Generated data:")
+        for byte in data:
+            print(f"{byte:02x} ", end="")
+        print()    
+
         self.buf_write(PacketFunction.PACKET_FUNC_RGB, data)
 
     def set_motor_duty(self, dutys):
