@@ -86,6 +86,12 @@ void board_set_rgb(Board *board, int pixels[][4], int count)
         data[5 + i * 4] = b;
     }
 
+    for (int i = 0; i < sizeof(data); i++)
+    {
+        printf("%02x ", data[i]); // 打印每個字節
+    }
+    printf("\n");
+
     // 將打包好的數據寫入串列埠
     buf_write(board, PACKET_FUNC_RGB, data, sizeof(data));
 }
