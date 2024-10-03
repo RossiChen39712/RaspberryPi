@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <pthread.h>
 
 // 定義通信協議狀態
 typedef enum
@@ -57,6 +58,15 @@ typedef struct
     bool fail_safe;
 } SBusStatus;
 
+// 控制器的狀態枚舉
+typedef enum
+{
+    PACKET_CONTROLLER_STATE_STARTBYTE1,
+    PACKET_CONTROLLER_STATE_STARTBYTE2,
+    PACKET_CONTROLLER_STATE_RECV_DATA,
+    PACKET_CONTROLLER_STATE_DONE
+} PacketControllerState;
+
 // Board 結構體，用於保存狀態
 typedef struct
 {
@@ -64,10 +74,15 @@ typedef struct
     int frame[256];
     int recv_count;
     int fd;
+    PacketControllerState state; // 狀態機的狀態
+    pthread_t recv_thread;       // 接收數據的執行緒
+    int enable_recv;             // 控制接收執行緒
     // 添加其他必要的狀態和資源
 } Board;
 
 // 函數聲明
+Board *init_controller();
+void cleanup_controller(PacketController *controller);
 
 // 初始化 Board
 void board_init(Board *board, const char *device, int baudrate, int timeout);

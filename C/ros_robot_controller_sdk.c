@@ -2,10 +2,106 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-// #include <pthread.h>
-#include <unistd.h> // for sleep function
-#include <fcntl.h>  // for file control options
-// #include <termios.h> // for POSIX terminal control definitions
+#include <pthread.h>
+#include <unistd.h>  // for sleep function
+#include <fcntl.h>   // for file control options
+#include <termios.h> // for POSIX terminal control definitions
+#include <stdint.h>
+#include <string.h>
+#include <errno.h>
+#include <time.h>
+
+#define BAUDRATE B1000000     // 波特率
+#define DEVICE "/dev/ttyAMA0" // 設備名稱
+#define BUF_SIZE 256          // 緩衝區大小
+
+// 配置串列埠
+int configure_serial(const char *device, int baudrate)
+{
+    int fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY);
+    if (fd == -1)
+    {
+        perror("Failed to open the device");
+        return -1;
+    }
+
+    struct termios options;
+    tcgetattr(fd, &options);
+
+    cfsetispeed(&options, baudrate);
+    cfsetospeed(&options, baudrate);
+
+    options.c_cflag |= (CLOCAL | CREAD); // 本地連接，允許讀取
+    options.c_cflag &= ~CSIZE;           // 清除資料大小位元
+    options.c_cflag |= CS8;              // 8位元數據
+    options.c_cflag &= ~PARENB;          // 無奇偶校驗
+    options.c_cflag &= ~CSTOPB;          // 一個停止位
+    options.c_cflag &= ~CRTSCTS;         // 不使用硬體流控
+
+    tcsetattr(fd, TCSANOW, &options); // 設置立即生效
+
+    return fd;
+}
+
+// 接收數據的執行緒函數
+void *recv_task(void *arg)
+{
+    PacketController *controller = (PacketController *)arg;
+    uint8_t buf[BUF_SIZE];
+
+    while (controller->enable_recv)
+    {
+        // 從串列埠讀取數據
+        int n = read(controller->fd, buf, sizeof(buf));
+        if (n > 0)
+        {
+            // 打印接收到的數據
+            printf("Received data: ");
+            for (int i = 0; i < n; i++)
+            {
+                printf("%02x ", buf[i]);
+            }
+            printf("\n");
+
+            controller->state = PACKET_CONTROLLER_STATE_RECV_DATA;
+        }
+        usleep(1000); // 避免過高 CPU 負載
+    }
+
+    return NULL;
+}
+
+// 初始化控制器
+PacketController *init_controller()
+{
+    PacketController *controller = (PacketController *)malloc(sizeof(PacketController));
+
+    // 初始化串列埠
+    controller->fd = configure_serial(DEVICE, BAUDRATE);
+    if (controller->fd < 0)
+    {
+        free(controller);
+        return NULL;
+    }
+
+    controller->state = PACKET_CONTROLLER_STATE_STARTBYTE1;
+    controller->enable_recv = 1;
+
+    // 啟動接收執行緒
+    pthread_create(&controller->recv_thread, NULL, recv_task, (void *)controller);
+    usleep(100000); // 稍作延遲等待執行緒啟動
+
+    return controller;
+}
+
+// 結束控制器，清理資源
+void cleanup_controller(PacketController *controller)
+{
+    controller->enable_recv = 0;                 // 停止接收
+    pthread_join(controller->recv_thread, NULL); // 等待執行緒結束
+    close(controller->fd);                       // 關閉串列埠
+    free(controller);                            // 釋放內存
+}
 
 // CRC8 校驗表
 static const uint8_t crc8_table[256] = {
