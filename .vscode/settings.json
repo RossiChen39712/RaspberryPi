@@ -3,6 +3,7 @@
         "fcntl.h": "c",
         "ros_robot_controller_sdk.h": "c",
         "unistd.h": "c",
-        "stddef.h": "c"
+        "stddef.h": "c",
+        "signal.h": "c"
     }
 }

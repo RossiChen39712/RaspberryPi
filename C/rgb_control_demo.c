@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <unistd.h>
-#include "ros_robot_controller_sdk.h" // 假設有對應的 SDK 支援
+#include "ros_robot_controller_sdk.h"
 
 #define DEVICE "/dev/ttyAMA0" // 設備串列埠
 
@@ -17,14 +17,39 @@ int main()
     Board board;
     board.fd = serial_fd;
 
-    // 設置兩個 RGB LED 的顏色
-    int pixels[2][4] = {
-        {1, 255, 0, 0}, // LED 1 設為紅色
-        {2, 0, 255, 0}  // LED 2 設為綠色
-    };
+    int start = 1; // 假設開始時為 1，代表需要執行
 
-    // 發送RGB設置命令
-    board_set_rgb(&board, pixels, 2);
+    while (true)
+    {
+        // 設置 RGB LED 為紅色
+        const RgbPixel red_pixels[2] = {rgb1_red, rgb2_red};
+        board_set_rgb(&board, red_pixels, 2);
+        sleep(1);
+
+        // 設置 RGB LED 為綠色
+        const RgbPixel green_pixels[2] = {rgb1_green, rgb2_green};
+        board_set_rgb(&board, green_pixels, 2);
+        sleep(1);
+
+        // 設置 RGB LED 為藍色
+        const RgbPixel blue_pixels[2] = {rgb1_blue, rgb2_blue};
+        board_set_rgb(&board, blue_pixels, 2);
+        sleep(1);
+
+        // 設置 RGB LED 為黃色
+        const RgbPixel yellow_pixels[2] = {rgb1_yellow, rgb2_yellow};
+        board_set_rgb(&board, yellow_pixels, 2);
+        sleep(1);
+
+        if (!start)
+        {
+            // 關閉 LED
+            const RgbPixel off_pixels[2] = {rgb1_off, rgb2_off};
+            board_set_rgb(&board, off_pixels, 2);
+            printf("已關閉\n");
+            break;
+        }
+    }
 
     // 關閉串列埠
     close(serial_fd);

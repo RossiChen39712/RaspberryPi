@@ -36,6 +36,31 @@ typedef enum
     PACKET_FUNC_NONE = 12      // 無效功能
 } PacketFunction;
 
+// 定義 RGB Pixel 結構來表示 RGB 設定
+typedef struct
+{
+    int id;    // RGB ID
+    uint8_t r; // 紅色
+    uint8_t g; // 綠色
+    uint8_t b; // 藍色
+} RgbPixel;
+
+// 定義每個 RGB 顏色
+static const RgbPixel rgb1_red = {1, 255, 0, 0}; // rgb1 設為紅色
+static const RgbPixel rgb2_red = {2, 255, 0, 0}; // rgb2 設為紅色
+
+static const RgbPixel rgb1_green = {1, 0, 255, 0}; // rgb1 設為綠色
+static const RgbPixel rgb2_green = {2, 0, 255, 0}; // rgb2 設為綠色
+
+static const RgbPixel rgb1_blue = {1, 0, 0, 255}; // rgb1 設為藍色
+static const RgbPixel rgb2_blue = {2, 0, 0, 255}; // rgb2 設為藍色
+
+static const RgbPixel rgb1_yellow = {1, 255, 255, 0}; // rgb1 設為黃色
+static const RgbPixel rgb2_yellow = {2, 255, 255, 0}; // rgb2 設為黃色
+
+static const RgbPixel rgb1_off = {1, 0, 0, 0}; // rgb1 關閉
+static const RgbPixel rgb2_off = {2, 0, 0, 0}; // rgb2 關閉
+
 // 按鍵事件的狀態
 typedef enum
 {
