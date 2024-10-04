@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "fcntl.h": "c"
+        "fcntl.h": "c",
+        "ros_robot_controller_sdk.h": "c"
     }
 }
