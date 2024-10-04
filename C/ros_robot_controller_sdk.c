@@ -1,14 +1,13 @@
 #include "ros_robot_controller_sdk.h"
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-// #include <pthread.h>
-#include <unistd.h> // for sleep function
-#include <fcntl.h>  // for file control options
-// #include <termios.h> // for POSIX terminal control definitions
+#include <fcntl.h>
+#include <errno.h>
+#include <termios.h>
+#include <unistd.h>
 
-// CRC8 校驗表
-static const uint8_t crc8_table[256] = {
+// CRC8 查表數據
+uint8_t crc8_table[256] = {
     0, 94, 188, 226, 97, 63, 221, 131, 194, 156, 126, 32, 163, 253, 31, 65,
     157, 195, 33, 127, 252, 162, 64, 30, 95, 1, 227, 189, 62, 96, 130, 220,
     35, 125, 159, 193, 66, 28, 254, 160, 225, 191, 93, 3, 128, 222, 60, 98,
@@ -26,85 +25,85 @@ static const uint8_t crc8_table[256] = {
     233, 183, 85, 11, 136, 214, 52, 106, 43, 117, 151, 201, 74, 20, 246, 168,
     116, 42, 200, 150, 21, 75, 169, 247, 182, 232, 10, 84, 215, 137, 107, 53};
 
-// CRC8 校驗計算
-uint8_t checksum_crc8(const uint8_t *data, int len)
+// 配置串列埠
+int configure_serial(const char *device)
+{
+    int fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY);
+    if (fd == -1)
+    {
+        perror("Failed to open serial port");
+        return -1;
+    }
+
+    struct termios options;
+    tcgetattr(fd, &options);
+
+    cfsetispeed(&options, B1000000); // 設置輸入波特率
+    cfsetospeed(&options, B1000000); // 設置輸出波特率
+
+    options.c_cflag |= (CLOCAL | CREAD);
+    options.c_cflag &= ~CSIZE;
+    options.c_cflag |= CS8;
+    options.c_cflag &= ~PARENB;
+    options.c_cflag &= ~CSTOPB;
+    options.c_cflag &= ~CRTSCTS;
+
+    tcflush(fd, TCIFLUSH);
+    tcsetattr(fd, TCSANOW, &options);
+
+    return fd;
+}
+
+// 計算 CRC8
+uint8_t checksum_crc8(const uint8_t *data, size_t len)
 {
     uint8_t check = 0;
-    for (int i = 0; i < len; i++)
+    for (size_t i = 0; i < len; i++)
     {
         check = crc8_table[check ^ data[i]];
     }
-    return check & 0xFF;
+    return check & 0x00FF;
 }
 
-// 傳輸數據到串口
-void buf_write(Board *board, PacketFunction func, const uint8_t *data, int len)
+// 串列發送
+void buf_write(Board *board, uint8_t func, const uint8_t *data, int len)
 {
-    uint8_t buf[256];
-    buf[0] = 0xAA;
-    buf[1] = 0x55;
-    buf[2] = func;
-    buf[3] = len;
-    memcpy(&buf[4], data, len);
-    buf[4 + len] = checksum_crc8(&buf[2], len + 2);
-    // 打印發送的緩衝區
-    printf("Sending buffer: ");
-    for (int i = 0; i < len + 5; i++)
-    {
-        printf("%02x ", buf[i]);
-    }
-    printf("\n");
+    uint8_t buffer[256];
+    int index = 0;
 
-    write(board->fd, buf, len + 5);
+    buffer[index++] = 0xAA;
+    buffer[index++] = 0x55;
+    buffer[index++] = func;
+    buffer[index++] = len;
+
+    memcpy(&buffer[index], data, len);
+    index += len;
+
+    uint8_t crc = checksum_crc8(&buffer[2], len + 2);
+    buffer[index++] = crc;
+
+    write(board->fd, buffer, index);
 }
 
-// 開啟接收
-void board_enable_reception(Board *board, int enable)
-{
-    board->enable_recv = enable;
-}
-
-// 設置 RGB LED 的函數
+// 設置 RGB LED
 void board_set_rgb(Board *board, int pixels[][4], int count)
 {
-    // 創建數據緩衝區
-    uint8_t data[2 + count * 4]; // 2個字節頭信息 + 每個LED 4個字節(1個ID + 3個RGB)
-    data[0] = 0x01;              // 命令的子命令
-    data[1] = (uint8_t)count;    // LED 數量
+    uint8_t data[2 + count * 4];
+    data[0] = 0x01;
+    data[1] = (uint8_t)count;
 
-    // 將每個LED的信息打包到數據中
     for (int i = 0; i < count; i++)
     {
-        int index = pixels[i][0];          // LED的ID
-        uint8_t r = (uint8_t)pixels[i][1]; // 紅色
-        uint8_t g = (uint8_t)pixels[i][2]; // 綠色
-        uint8_t b = (uint8_t)pixels[i][3]; // 藍色
+        int index = pixels[i][0];
+        uint8_t r = (uint8_t)pixels[i][1];
+        uint8_t g = (uint8_t)pixels[i][2];
+        uint8_t b = (uint8_t)pixels[i][3];
 
-        // 按照Python的數據順序打包 (ID-1, R, G, B)
-        data[2 + i * 4] = (uint8_t)(index - 1); // LED ID 減 1
+        data[2 + i * 4] = (uint8_t)(index - 1);
         data[3 + i * 4] = r;
         data[4 + i * 4] = g;
         data[5 + i * 4] = b;
     }
 
-    // for (int i = 0; i < sizeof(data); i++)
-    // {
-    //     printf("%02x ", data[i]); // 打印每個字節
-    // }
-    // printf("\n");
-
-    // 將打包好的數據寫入
     buf_write(board, PACKET_FUNC_RGB, data, sizeof(data));
-}
-
-// 測試 Bus 舵機
-void bus_servo_test(Board *board)
-{
-    // 舵機測試代碼
-}
-
-// 測試 PWM 舵機
-void pwm_servo_test(Board *board)
-{
-    // PWM 舵機測試代碼
 }
