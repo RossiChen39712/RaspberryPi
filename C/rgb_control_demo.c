@@ -1,11 +1,24 @@
 #include <stdio.h>
 #include <unistd.h>
+#include <signal.h>
 #include "ros_robot_controller_sdk.h"
+
+int start = 1; // 假設開始時為 1，代表需要執行
+
+// 信號處理函數
+void handle_sigint(int sig)
+{
+    start = 0; // 當接收到 Ctrl + C 信號時，將 start 設為 0
+    printf("\n接收到 Ctrl + C 信號，準備復歸 並退出程式\n");
+}
 
 #define DEVICE "/dev/ttyAMA0" // 設備串列埠
 
 int main()
 {
+    // 註冊 SIGINT 信號處理函數 (Ctrl + C)
+    signal(SIGINT, handle_sigint);
+
     // 配置串列埠
     int serial_fd = configure_serial(DEVICE);
     if (serial_fd == -1)
@@ -16,8 +29,6 @@ int main()
     // 初始化 Board 結構
     Board board;
     board.fd = serial_fd;
-
-    int start = 1; // 假設開始時為 1，代表需要執行
 
     while (true)
     {
@@ -46,7 +57,7 @@ int main()
             // 關閉 LED
             const RgbPixel off_pixels[2] = {rgb1_off, rgb2_off};
             board_set_rgb(&board, off_pixels, 2);
-            printf("已關閉\n");
+            printf("RGB已關閉\n");
             break;
         }
     }
