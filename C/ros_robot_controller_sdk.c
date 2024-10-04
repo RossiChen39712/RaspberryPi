@@ -1,6 +1,7 @@
 #include "ros_robot_controller_sdk.h"
 #include <stdio.h>
 #include <string.h>
+#include <stddef.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <termios.h>
