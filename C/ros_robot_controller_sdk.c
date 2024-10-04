@@ -87,7 +87,7 @@ void buf_write(Board *board, uint8_t func, const uint8_t *data, int len)
 }
 
 // 設置 RGB LED
-void board_set_rgb(Board *board, int pixels[][4], int count)
+void board_set_rgb(Board *board, const RgbPixel *pixels, int count)
 {
     uint8_t data[2 + count * 4];
     data[0] = 0x01;
@@ -95,16 +95,11 @@ void board_set_rgb(Board *board, int pixels[][4], int count)
 
     for (int i = 0; i < count; i++)
     {
-        int index = pixels[i][0];
-        uint8_t r = (uint8_t)pixels[i][1];
-        uint8_t g = (uint8_t)pixels[i][2];
-        uint8_t b = (uint8_t)pixels[i][3];
-
-        data[2 + i * 4] = (uint8_t)(index - 1);
-        data[3 + i * 4] = r;
-        data[4 + i * 4] = g;
-        data[5 + i * 4] = b;
+        data[2 + i * 4] = (uint8_t)(pixels[i].id - 1);
+        data[3 + i * 4] = pixels[i].r;
+        data[4 + i * 4] = pixels[i].g;
+        data[5 + i * 4] = pixels[i].b;
     }
 
-    buf_write(board, PACKET_FUNC_RGB, data, sizeof(data));
+    buf_write(board, PACKET_FUNC_RGB, data, 2 + count * 4);
 }
