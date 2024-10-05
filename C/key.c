@@ -17,6 +17,28 @@ void handle_sigint(int sig)
     printf("\n接收到 Ctrl + C 信號，關閉RGB燈並退出程序\n");
 }
 
+// 按鈕1回調函數
+void button1_callback(int event_type)
+{
+    if (event_type == GPIOD_LINE_EVENT_FALLING_EDGE)
+    {
+        RgbPixel red_pixels[2] = {{1, 255, 0, 0}, {2, 255, 0, 0}};
+        board_set_rgb(&board, red_pixels, 2);
+        printf("\n按下按鈕1，RGB 燈變為紅色\n");
+    }
+}
+
+// 按鈕2回調函數
+void button2_callback(int event_type)
+{
+    if (event_type == GPIOD_LINE_EVENT_FALLING_EDGE)
+    {
+        RgbPixel blue_pixels[2] = {{1, 0, 0, 255}, {2, 0, 0, 255}};
+        board_set_rgb(&board, blue_pixels, 2);
+        printf("\n按下按鈕2，RGB 燈變為藍色\n");
+    }
+}
+
 int main()
 {
     printf("Tips:\n * 按下Ctrl+C可关闭此次程序运行，若失败请多次尝试！\n");
