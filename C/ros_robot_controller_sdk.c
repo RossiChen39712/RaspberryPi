@@ -7,6 +7,7 @@
 #include <termios.h>
 #include <unistd.h>
 #include <gpiod.h>
+#include <pthread.h>
 
 // CRC8 查表數據
 uint8_t crc8_table[256] = {

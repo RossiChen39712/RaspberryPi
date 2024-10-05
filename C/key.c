@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <gpiod.h>
 #include <signal.h>
+#include <pthread.h>
 #include "ros_robot_controller_sdk.h"
 
 int start = 1;
