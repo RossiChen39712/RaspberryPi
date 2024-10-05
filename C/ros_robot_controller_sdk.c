@@ -6,6 +6,7 @@
 #include <errno.h>
 #include <termios.h>
 #include <unistd.h>
+#include <gpiod.h>
 
 // CRC8 查表數據
 uint8_t crc8_table[256] = {
@@ -153,4 +154,37 @@ void rgb_color_cycle(Board *board, int time_interval)
             break;
         }
     }
+}
+
+// 初始化 GPIO
+struct gpiod_chip *gpio_init(const char *chip_name)
+{
+    struct gpiod_chip *chip = gpiod_chip_open_by_name(chip_name);
+    if (!chip)
+    {
+        perror("Failed to open GPIO chip");
+    }
+    return chip;
+}
+
+// 讀取按鍵狀態
+int gpio_read_key(struct gpiod_chip *chip, int pin)
+{
+    struct gpiod_line *line = gpiod_chip_get_line(chip, pin);
+    if (!line)
+    {
+        perror("Failed to get GPIO line");
+        return -1;
+    }
+
+    if (gpiod_line_request_input_flags(line, "key", GPIOD_LINE_REQUEST_FLAG_BIAS_PULL_UP) < 0)
+    {
+        perror("Failed to request line as input");
+        return -1;
+    }
+
+    int value = gpiod_line_get_value(line);
+    gpiod_line_release(line); // 釋放線
+
+    return value;
 }
