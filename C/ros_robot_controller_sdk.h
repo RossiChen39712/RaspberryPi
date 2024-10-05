@@ -94,4 +94,7 @@ void buf_write(Board *board, uint8_t func, const uint8_t *data, int len);
 // 設置 RGB LED 的函數
 void board_set_rgb(Board *board, const RgbPixel *pixels, int count);
 
+// RGB 色彩循環函數，增加時間間隔參數
+void rgb_color_cycle(Board *board, int time_interval);
+
 #endif // SDK_H

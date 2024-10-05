@@ -103,3 +103,54 @@ void board_set_rgb(Board *board, const RgbPixel *pixels, int count)
 
     buf_write(board, PACKET_FUNC_RGB, data, 2 + count * 4);
 }
+
+// 封裝 RGB 色彩循環函數，增加時間間隔參數
+void rgb_color_cycle(Board *board, int time_interval)
+{
+    int r = 255, g = 0, b = 0; // 從紅色開始
+    int step = 5;              // 設置每次變化的步長
+
+    while (1)
+    {
+        // 設置兩個 LED 為當前顏色
+        RgbPixel color_pixels[2] = {
+            {1, r, g, b},
+            {2, r, g, b}};
+        board_set_rgb(board, color_pixels, 2);
+
+        usleep(time_interval * 1000); // 根據參數設置延遲，將毫秒轉換成微秒
+
+        // RGB 色彩循環：逐步增減 R、G、B 值來實現平滑過渡
+        if (r == 255 && g < 255 && b == 0)
+        {
+            g += step; // 紅 -> 黃 -> 綠
+        }
+        else if (g == 255 && r > 0 && b == 0)
+        {
+            r -= step; // 綠 -> 青
+        }
+        else if (g == 255 && b < 255 && r == 0)
+        {
+            b += step; // 青 -> 藍
+        }
+        else if (b == 255 && g > 0 && r == 0)
+        {
+            g -= step; // 藍 -> 紫
+        }
+        else if (b == 255 && r < 255 && g == 0)
+        {
+            r += step; // 紫 -> 紅
+        }
+        else if (r == 255 && b > 0 && g == 0)
+        {
+            b -= step; // 回到紅色
+        }
+
+        // 如果外部信號要退出，則退出循環（用全局變量控制）
+        extern int start;
+        if (!start)
+        {
+            break;
+        }
+    }
+}
