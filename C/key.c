@@ -40,35 +40,32 @@ int main()
         return -1;
     }
 
-    while (start)
+    // 設置按鍵中斷
+    struct gpiod_line *button1_line = gpio_setup_interrupt(chip, 13, button1_callback);
+    struct gpiod_line *button2_line = gpio_setup_interrupt(chip, 23, button2_callback);
+
+    if (!button1_line || !button2_line)
     {
-        // 讀取按鍵狀態
-        int key1_state = gpio_read_key(chip, 13);
-        int key2_state = gpio_read_key(chip, 23);
-
-        if (key1_state == 0)
-        {
-            // 設置 RGB 燈為紅色
-            RgbPixel red_pixels[2] = {{1, 255, 0, 0}, {2, 255, 0, 0}};
-            board_set_rgb(&board, red_pixels, 2);
-        }
-
-        if (key2_state == 0)
-        {
-            // 設置 RGB 燈為藍色
-            RgbPixel blue_pixels[2] = {{1, 0, 0, 255}, {2, 0, 0, 255}};
-            board_set_rgb(&board, blue_pixels, 2);
-        }
-
-        printf("\rkey1: %d key2: %d", key1_state, key2_state);
-        fflush(stdout);
-
-        usleep(1000); // 延遲 1 毫秒
+        gpiod_chip_close(chip);
+        return -1;
     }
 
-    // 清理並關閉 GPIO
+    // 創建兩個線程來等待按鍵中斷
+    pthread_t thread1, thread2;
+    pthread_create(&thread1, NULL, (void *)gpio_wait_for_interrupt, button1_line);
+    pthread_create(&thread2, NULL, (void *)gpio_wait_for_interrupt, button2_line);
+
+    // 等待信號觸發退出
+    while (start)
+    {
+        sleep(1); // 主線程保持運行
+    }
+
+    // 清理資源
+    pthread_join(thread1, NULL);
+    pthread_join(thread2, NULL);
     gpiod_chip_close(chip);
-    close(serial_fd);
+    close(board.fd);
 
     return 0;
 }

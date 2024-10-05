@@ -101,7 +101,10 @@ void rgb_color_cycle(Board *board, int time_interval);
 // 初始化 GPIO，返回 gpiod_chip* 結構
 struct gpiod_chip *gpio_init(const char *chip_name);
 
-// 讀取按鍵狀態
-int gpio_read_key(struct gpiod_chip *chip, int pin);
+// 設置 GPIO 中斷監聽
+struct gpiod_line *gpio_setup_interrupt(struct gpiod_chip *chip, int pin, void (*callback)(int));
+
+// 等待 GPIO 中斷事件
+void gpio_wait_for_interrupt(struct gpiod_line *line);
 
 #endif // SDK_H

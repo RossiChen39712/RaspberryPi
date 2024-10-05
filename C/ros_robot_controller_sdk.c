@@ -167,24 +167,43 @@ struct gpiod_chip *gpio_init(const char *chip_name)
     return chip;
 }
 
-// 讀取按鍵狀態
-int gpio_read_key(struct gpiod_chip *chip, int pin)
+// 設置 GPIO 中斷監聽
+struct gpiod_line *gpio_setup_interrupt(struct gpiod_chip *chip, int pin, void (*callback)(int))
 {
     struct gpiod_line *line = gpiod_chip_get_line(chip, pin);
     if (!line)
     {
         perror("Failed to get GPIO line");
-        return -1;
+        return NULL;
     }
 
-    if (gpiod_line_request_input_flags(line, "key", GPIOD_LINE_REQUEST_FLAG_BIAS_PULL_UP) < 0)
+    if (gpiod_line_request_both_edges_events(line, "gpio_interrupt") < 0)
     {
-        perror("Failed to request line as input");
-        return -1;
+        perror("Failed to request line events");
+        return NULL;
     }
 
-    int value = gpiod_line_get_value(line);
-    gpiod_line_release(line); // 釋放線
+    return line;
+}
 
-    return value;
+// 等待 GPIO 中斷事件
+void gpio_wait_for_interrupt(struct gpiod_line *line)
+{
+    struct gpiod_line_event event;
+    while (1)
+    {
+        int ret = gpiod_line_event_wait(line, NULL); // 等待中斷事件
+        if (ret == 1)
+        {
+            gpiod_line_event_read(line, &event);
+            if (event.event_type == GPIOD_LINE_EVENT_RISING_EDGE)
+            {
+                printf("Rising edge detected!\n");
+            }
+            else if (event.event_type == GPIOD_LINE_EVENT_FALLING_EDGE)
+            {
+                printf("Falling edge detected!\n");
+            }
+        }
+    }
 }
