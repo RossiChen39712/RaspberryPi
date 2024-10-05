@@ -30,31 +30,11 @@ int main()
     Board board;
     board.fd = serial_fd;
 
-    while (start)
-    {
-        // 設置 RGB LED 為紅色
-        const RgbPixel red_pixels[2] = {rgb1_red, rgb2_red};
-        board_set_rgb(&board, red_pixels, 2);
-        sleep(1);
+    // 開始 RGB Color Cycle，並傳入時間間隔參數
+    rgb_color_cycle(&board, 50);
 
-        // 設置 RGB LED 為綠色
-        const RgbPixel green_pixels[2] = {rgb1_green, rgb2_green};
-        board_set_rgb(&board, green_pixels, 2);
-        sleep(1);
-
-        // 設置 RGB LED 為藍色
-        const RgbPixel blue_pixels[2] = {rgb1_blue, rgb2_blue};
-        board_set_rgb(&board, blue_pixels, 2);
-        sleep(1);
-
-        // 設置 RGB LED 為黃色
-        const RgbPixel yellow_pixels[2] = {rgb1_yellow, rgb2_yellow};
-        board_set_rgb(&board, yellow_pixels, 2);
-        sleep(1);
-    }
-
-    // 關閉 LED 並釋放資源
-    const RgbPixel off_pixels[2] = {rgb1_off, rgb2_off};
+    // 當 Ctrl + C 被按下時，將所有燈關閉
+    RgbPixel off_pixels[2] = {rgb1_off, rgb2_off};
     board_set_rgb(&board, off_pixels, 2);
     printf("RGB 已關閉\n");
 
