@@ -75,8 +75,8 @@ int main()
 
     // 創建兩個線程來等待按鍵中斷
     pthread_t thread1, thread2;
-    pthread_create(&thread1, NULL, gpio_wait_for_interrupt, (void *)button1_line, &start);
-    pthread_create(&thread2, NULL, gpio_wait_for_interrupt, (void *)button2_line, &start);
+    pthread_create(&thread1, NULL, gpio_wait_for_interrupt, (void *)button1_line);
+    pthread_create(&thread2, NULL, gpio_wait_for_interrupt, (void *)button2_line);
 
     // 等待信號觸發退出
     while (start)

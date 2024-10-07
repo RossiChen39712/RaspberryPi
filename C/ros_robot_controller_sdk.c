@@ -187,12 +187,12 @@ struct gpiod_line *gpio_setup_interrupt(struct gpiod_chip *chip, int pin, void (
     return line;
 }
 
-void *gpio_wait_for_interrupt(void *arg, int *start)
+void *gpio_wait_for_interrupt(void *arg)
 {
     struct gpiod_line *line = (struct gpiod_line *)arg;
     struct gpiod_line_event event;
 
-    while (*start)
+    while (1)
     {
         int ret = gpiod_line_event_wait(line, NULL); // 等待中斷事件
         if (ret == 1)
