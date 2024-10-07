@@ -9,6 +9,8 @@
 int start = 1;
 Board board;
 
+pthread_mutex_t lock;
+
 // 信號處理函數，用來捕捉 Ctrl+C 信號，並關閉 RGB 燈
 void handle_sigint(int sig)
 {
