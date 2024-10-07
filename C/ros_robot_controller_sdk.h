@@ -105,6 +105,6 @@ struct gpiod_chip *gpio_init(const char *chip_name);
 struct gpiod_line *gpio_setup_interrupt(struct gpiod_chip *chip, int pin, void (*callback)(int));
 
 // 等待 GPIO 中斷事件
-void *gpio_wait_for_interrupt(void *arg);
+void *gpio_wait_for_interrupt(void *arg, int *start);
 
 #endif // SDK_H

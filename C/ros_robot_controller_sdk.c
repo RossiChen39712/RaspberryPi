@@ -187,7 +187,7 @@ struct gpiod_line *gpio_setup_interrupt(struct gpiod_chip *chip, int pin, void (
     return line;
 }
 
-void *gpio_wait_for_interrupt(void *arg)
+void *gpio_wait_for_interrupt(void *arg, int *start)
 {
     struct gpiod_line *line = (struct gpiod_line *)arg;
     struct gpiod_line_event event;
