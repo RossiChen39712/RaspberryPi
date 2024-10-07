@@ -235,7 +235,7 @@ void button1_callback(int event_type)
     if (event_type == GPIOD_LINE_EVENT_FALLING_EDGE)
     {
         const RgbPixel red_pixels[2] = {rgb1_red, rgb2_red}; // 使用定義好的顏色
-        board_set_rgb(&board, red_pixels, 2);
+        board_set_rgb(&Board, red_pixels, 2);
         printf("\n按下按鈕1，RGB 燈變為紅色\n");
     }
 }
@@ -246,7 +246,7 @@ void button2_callback(int event_type)
     if (event_type == GPIOD_LINE_EVENT_FALLING_EDGE)
     {
         const RgbPixel blue_pixels[2] = {rgb1_blue, rgb2_blue}; // 使用定義好的顏色
-        board_set_rgb(&board, blue_pixels, 2);
+        board_set_rgb(&Board, blue_pixels, 2);
         printf("\n按下按鈕2，RGB 燈變為藍色\n");
     }
 }
