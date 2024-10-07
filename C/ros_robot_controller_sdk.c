@@ -192,7 +192,7 @@ void *gpio_wait_for_interrupt(void *arg, int *start)
     struct gpiod_line *line = (struct gpiod_line *)arg;
     struct gpiod_line_event event;
 
-    while (start)
+    while (*start)
     {
         int ret = gpiod_line_event_wait(line, NULL); // 等待中斷事件
         if (ret == 1)
