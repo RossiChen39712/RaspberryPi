@@ -9,8 +9,6 @@
 int start = 1;
 Board board;
 
-pthread_mutex_t lock;
-
 // 信號處理函數，用來捕捉 Ctrl+C 信號，並關閉 RGB 燈
 void handle_sigint(int sig)
 {
@@ -23,27 +21,23 @@ void handle_sigint(int sig)
 // 按鈕1回調函數
 void button1_callback(int event_type)
 {
-    pthread_mutex_lock(&lock);
     if (event_type == GPIOD_LINE_EVENT_FALLING_EDGE)
     {
         const RgbPixel red_pixels[2] = {rgb1_red, rgb2_red}; // 使用定義好的顏色
         board_set_rgb(&board, red_pixels, 2);
         printf("\n按下按鈕1，RGB 燈變為紅色\n");
     }
-    pthread_mutex_unlock(&lock);
 }
 
 // 按鈕2回調函數
 void button2_callback(int event_type)
 {
-    pthread_mutex_lock(&lock);
     if (event_type == GPIOD_LINE_EVENT_FALLING_EDGE)
     {
         const RgbPixel blue_pixels[2] = {rgb1_blue, rgb2_blue}; // 使用定義好的顏色
         board_set_rgb(&board, blue_pixels, 2);
         printf("\n按下按鈕2，RGB 燈變為藍色\n");
     }
-    pthread_mutex_unlock(&lock);
 }
 
 int main()

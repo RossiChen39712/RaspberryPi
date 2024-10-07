@@ -198,18 +198,31 @@ void *gpio_wait_for_interrupt(void *arg)
         if (ret == 1)
         {
             gpiod_line_event_read(line, &event);
-            if (event.event_type == GPIOD_LINE_EVENT_RISING_EDGE)
+            if (event.event_type == GPIOD_LINE_EVENT_FALLING_EDGE)
             {
-                printf("Rising edge detected!\n");
-            }
-            else if (event.event_type == GPIOD_LINE_EVENT_FALLING_EDGE)
-            {
-                printf("Falling edge detected!\n");
+                printf("Falling edge detected on line %d!\n", gpiod_line_offset(line));
+
+                // 呼叫對應的回調函數
+                if (gpiod_line_offset(line) == 13) // 假設 13 為按鈕1
+                {
+                    button1_callback(GPIOD_LINE_EVENT_FALLING_EDGE);
+                }
+                else if (gpiod_line_offset(line) == 23) // 假設 23 為按鈕2
+                {
+                    button2_callback(GPIOD_LINE_EVENT_FALLING_EDGE);
+                }
             }
         }
         else if (ret < 0)
         {
             perror("gpiod_line_event_wait");
+        }
+
+        // 若外部信號控制結束，則結束循環
+        extern int start;
+        if (!start)
+        {
+            break;
         }
     }
 
