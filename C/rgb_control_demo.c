@@ -1,66 +1,65 @@
 #include <stdio.h>
-#include <signal.h>
-#include <stdbool.h>
 #include <unistd.h>
-#include "ros_robot_controller_sdk.h" // 假設有對應的 SDK 支援
+#include <signal.h>
+#include "ros_robot_controller_sdk.h"
 
-bool start = true;
+int start = 1; // 控制程式運行的全局變數
 
-// 關閉前處理函數
-void Stop(int signum)
+// 信號處理函數
+void handle_sigint(int sig)
 {
-    start = false;
-    printf("關閉中...\n");
+    start = 0; // 當接收到 Ctrl + C 信號時，將 start 設為 0，退出迴圈
+    printf("\n接收到 Ctrl + C 信號，準備復歸並退出程式\n");
 }
+
+#define DEVICE "/dev/ttyAMA0" // 設備串列埠
 
 int main()
 {
-    printf("----------------------------------------------------------\n
-    Tips:按下Ctrl+C可關閉此程式運行，若失敗請多次嘗試！\n
-    ----------------------------------------------------------\n");
+    // 註冊 SIGINT 信號處理函數 (Ctrl + C)
+    signal(SIGINT, handle_sigint);
 
-    // 設定信號處理
-    signal(SIGINT, Stop);
-
-    // 建立 Board 類別
-    rrc_Board board;
-
-    // 初始化 Board，假設有對應的函數
-    rrc_board_init(&board);
-
-    // 先將所有燈關閉
-    int rgb_off[2][4] = {{1, 0, 0, 0}, {2, 0, 0, 0}};
-    rrc_set_rgb(&board, rgb_off, 2);
-
-    while (1) {
-        // 設置兩個燈為紅色
-        int rgb_red[2][4] = {{1, 255, 0, 0}, {2, 255, 0, 0}};
-        rrc_set_rgb(&board, rgb_red, 2);
-        sleep(1);
-
-        // 設置兩個燈為綠色
-        int rgb_green[2][4] = {{1, 0, 255, 0}, {2, 0, 255, 0}};
-        rrc_set_rgb(&board, rgb_green, 2);
-        sleep(1);
-
-        // 設置兩個燈為藍色
-        int rgb_blue[2][4] = {{1, 0, 0, 255}, {2, 0, 0, 255}};
-        rrc_set_rgb(&board, rgb_blue, 2);
-        sleep(1);
-
-        // 設置兩個燈為黃色
-        int rgb_yellow[2][4] = {{1, 255, 255, 0}, {2, 255, 255, 0}};
-        rrc_set_rgb(&board, rgb_yellow, 2);
-        sleep(1);
-
-        if (!start)
-        {
-            // 關閉所有燈
-            rrc_set_rgb(&board, rgb_off, 2);
-            printf("已關閉\n");
-            break;
-        }
+    // 配置串列埠
+    int serial_fd = configure_serial(DEVICE);
+    if (serial_fd == -1)
+    {
+        return -1;
     }
+
+    // 初始化 Board 結構
+    Board board;
+    board.fd = serial_fd;
+
+    while (start)
+    {
+        // 設置 RGB LED 為紅色
+        const RgbPixel red_pixels[2] = {rgb1_red, rgb2_red};
+        board_set_rgb(&board, red_pixels, 2);
+        sleep(1);
+
+        // 設置 RGB LED 為綠色
+        const RgbPixel green_pixels[2] = {rgb1_green, rgb2_green};
+        board_set_rgb(&board, green_pixels, 2);
+        sleep(1);
+
+        // 設置 RGB LED 為藍色
+        const RgbPixel blue_pixels[2] = {rgb1_blue, rgb2_blue};
+        board_set_rgb(&board, blue_pixels, 2);
+        sleep(1);
+
+        // 設置 RGB LED 為黃色
+        const RgbPixel yellow_pixels[2] = {rgb1_yellow, rgb2_yellow};
+        board_set_rgb(&board, yellow_pixels, 2);
+        sleep(1);
+    }
+
+    // 關閉 LED 並釋放資源
+    const RgbPixel off_pixels[2] = {rgb1_off, rgb2_off};
+    board_set_rgb(&board, off_pixels, 2);
+    printf("RGB 已關閉\n");
+
+    // 關閉串列埠
+    close(serial_fd);
 
     return 0;
 }
