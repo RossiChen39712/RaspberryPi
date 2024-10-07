@@ -108,9 +108,9 @@ struct gpiod_line *gpio_setup_interrupt(struct gpiod_chip *chip, int pin, void (
 void *gpio_wait_for_interrupt(void *arg);
 
 // 按鈕1回調函數
-void button1_callback(int event_type);
+void button1_callback(int event_type, Board *board);
 
 // 按鈕2回調函數
-void button2_callback(int event_type);
+void button2_callback(int event_type, Board *board);
 
 #endif // SDK_H
