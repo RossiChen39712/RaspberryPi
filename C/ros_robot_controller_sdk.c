@@ -187,11 +187,12 @@ struct gpiod_line *gpio_setup_interrupt(struct gpiod_chip *chip, int pin, void (
     return line;
 }
 
-// 等待 GPIO 中斷事件
-void gpio_wait_for_interrupt(struct gpiod_line *line)
+void *gpio_wait_for_interrupt(void *arg)
 {
+    struct gpiod_line *line = (struct gpiod_line *)arg;
     struct gpiod_line_event event;
-    while (1)
+
+    while (start)
     {
         int ret = gpiod_line_event_wait(line, NULL); // 等待中斷事件
         if (ret == 1)
@@ -206,5 +207,11 @@ void gpio_wait_for_interrupt(struct gpiod_line *line)
                 printf("Falling edge detected!\n");
             }
         }
+        else if (ret < 0)
+        {
+            perror("gpiod_line_event_wait");
+        }
     }
+
+    return NULL;
 }

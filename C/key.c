@@ -13,7 +13,7 @@ Board board;
 void handle_sigint(int sig)
 {
     start = 0;
-    RgbPixel off_pixels[2] = {{1, 0, 0, 0}, {2, 0, 0, 0}};
+    const RgbPixel off_pixels[2] = {rgb1_off, rgb2_off};
     board_set_rgb(&board, off_pixels, 2); // 關閉所有燈
     printf("\n接收到 Ctrl + C 信號，關閉RGB燈並退出程序\n");
 }
@@ -23,7 +23,7 @@ void button1_callback(int event_type)
 {
     if (event_type == GPIOD_LINE_EVENT_FALLING_EDGE)
     {
-        RgbPixel red_pixels[2] = {{1, 255, 0, 0}, {2, 255, 0, 0}};
+        const RgbPixel red_pixels[2] = {rgb1_red, rgb2_red}; // 使用定義好的顏色
         board_set_rgb(&board, red_pixels, 2);
         printf("\n按下按鈕1，RGB 燈變為紅色\n");
     }
@@ -34,7 +34,7 @@ void button2_callback(int event_type)
 {
     if (event_type == GPIOD_LINE_EVENT_FALLING_EDGE)
     {
-        RgbPixel blue_pixels[2] = {{1, 0, 0, 255}, {2, 0, 0, 255}};
+        const RgbPixel blue_pixels[2] = {rgb1_blue, rgb2_blue}; // 使用定義好的顏色
         board_set_rgb(&board, blue_pixels, 2);
         printf("\n按下按鈕2，RGB 燈變為藍色\n");
     }
