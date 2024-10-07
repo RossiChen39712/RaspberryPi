@@ -205,11 +205,11 @@ void *gpio_wait_for_interrupt(void *arg)
                 // 呼叫對應的回調函數
                 if (gpiod_line_offset(line) == 13) // 假設 13 為按鈕1
                 {
-                    button1_callback(GPIOD_LINE_EVENT_FALLING_EDGE);
+                    button1_callback(GPIOD_LINE_EVENT_FALLING_EDGE, board);
                 }
                 else if (gpiod_line_offset(line) == 23) // 假設 23 為按鈕2
                 {
-                    button2_callback(GPIOD_LINE_EVENT_FALLING_EDGE);
+                    button2_callback(GPIOD_LINE_EVENT_FALLING_EDGE, board);
                 }
             }
         }
